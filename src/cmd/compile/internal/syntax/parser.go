@@ -301,7 +301,9 @@ const stopset uint64 = 1<<_Break |
 	1<<_For |
 	1<<_Go |
 	1<<_Goto |
+	1<<_While |
 	1<<_If |
+	// 1<< _Do |
 	1<<_Return |
 	1<<_Select |
 	1<<_Switch |
@@ -2139,6 +2141,19 @@ func (p *parser) forStmt() Stmt {
 	return s
 }
 
+func (p *parser) whileStmt() Stmt {
+	if trace {
+		defer p.trace("whileStmt")()
+	}
+
+	s := new(WhileStmt)
+	s.pos = p.pos()
+	s.Init, s.Cond, _ = p.header(_While)
+	s.Body = p.blockStmt("while clause")
+	return s
+
+}
+
 func (p *parser) header(keyword token) (init SimpleStmt, cond Expr, post SimpleStmt) {
 	p.want(keyword)
 
@@ -2434,6 +2449,9 @@ func (p *parser) stmtOrNil() Stmt {
 
 	case _For:
 		return p.forStmt()
+
+	case _While:
+		return p.whileStmt()
 
 	case _Switch:
 		return p.switchStmt()

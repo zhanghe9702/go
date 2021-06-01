@@ -127,6 +127,9 @@ func walkStmt(n ir.Node) ir.Node {
 	case ir.OFOR, ir.OFORUNTIL:
 		n := n.(*ir.ForStmt)
 		return walkFor(n)
+	case ir.OWHL:
+		n := n.(*ir.WhileStmt)
+		return walkWhile(n)
 
 	case ir.OIF:
 		n := n.(*ir.IfStmt)
@@ -183,6 +186,19 @@ func walkFor(n *ir.ForStmt) ir.Node {
 	if n.Op() == ir.OFORUNTIL {
 		walkStmtList(n.Late)
 	}
+	walkStmtList(n.Body)
+	return n
+}
+
+// walkFor walks an OWHL node.
+func walkWhile(n *ir.WhileStmt) ir.Node {
+	if n.Cond != nil {
+		init := ir.TakeInit(n.Cond)
+		walkStmtList(init)
+		n.Cond = walkExpr(n.Cond, &init)
+		n.Cond = ir.InitExpr(init, n.Cond)
+	}
+
 	walkStmtList(n.Body)
 	return n
 }

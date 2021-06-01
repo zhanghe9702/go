@@ -1452,7 +1452,12 @@ func (r *importReader) node() ir.Node {
 		n := ir.NewForStmt(pos, nil, cond, post, r.stmtList())
 		*n.PtrInit() = init
 		return n
-
+	case ir.OWHL:
+		pos, init := r.pos(), r.stmtList()
+		cond, _ := r.exprsOrNil()
+		n := ir.NewWhileStmt(pos, nil, cond, r.stmtList())
+		*n.PtrInit() = init
+		return n
 	case ir.ORANGE:
 		pos := r.pos()
 		k, v := r.exprsOrNil()

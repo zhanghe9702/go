@@ -272,6 +272,7 @@ const (
 	// 		List     // Before looping to top, execute List
 	// 		goto top
 	// 	}
+	OWHL // while Init; Cond; {Body}
 	// OFORUNTIL is created by walk. There's no way to write this in Go code.
 	OFORUNTIL
 	OGOTO   // goto Label

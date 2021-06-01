@@ -869,6 +869,10 @@ func typecheck1(n ir.Node, top int) ir.Node {
 		n := n.(*ir.ForStmt)
 		return tcFor(n)
 
+	case ir.OWHL:
+		n := n.(*ir.WhileStmt)
+		return tcWhile(n)
+
 	case ir.OIF:
 		n := n.(*ir.IfStmt)
 		return tcIf(n)
@@ -2059,6 +2063,8 @@ func setHasBreak(n ir.Node) {
 	case *ir.SelectStmt:
 		n.HasBreak = true
 	case *ir.SwitchStmt:
+		n.HasBreak = true
+	case *ir.WhileStmt:
 		n.HasBreak = true
 	}
 }

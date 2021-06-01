@@ -121,8 +121,8 @@ func (ls *labelScope) enclosingTarget(b *block, name string) *LabeledStmt {
 // targets describes the target statements within which break
 // or continue statements are valid.
 type targets struct {
-	breaks    Stmt     // *ForStmt, *SwitchStmt, *SelectStmt, or nil
-	continues *ForStmt // or nil
+	breaks    Stmt // *ForStmt, *SwitchStmt, *SelectStmt, or nil
+	continues Stmt // do/for/while or nil
 }
 
 // blockBranches processes a block's body starting at start and returns the
@@ -240,7 +240,7 @@ func (ls *labelScope) blockBranches(parent *block, ctxt targets, lstmt *LabeledS
 				// whose execution terminates."
 				if t := ls.enclosingTarget(b, name); t != nil {
 					switch t := t.Stmt.(type) {
-					case *SwitchStmt, *SelectStmt, *ForStmt:
+					case *SwitchStmt, *SelectStmt, *ForStmt, *WhileStmt:
 						s.Target = t
 					default:
 						ls.err(s.Label.Pos(), "invalid break label %s", name)
@@ -254,6 +254,9 @@ func (ls *labelScope) blockBranches(parent *block, ctxt targets, lstmt *LabeledS
 				// "for" statement, and that is the one whose execution advances."
 				if t := ls.enclosingTarget(b, name); t != nil {
 					if t, ok := t.Stmt.(*ForStmt); ok {
+						s.Target = t
+					}
+					if t, ok := t.Stmt.(*WhileStmt); ok {
 						s.Target = t
 					} else {
 						ls.err(s.Label.Pos(), "invalid continue label %s", name)
@@ -291,6 +294,9 @@ func (ls *labelScope) blockBranches(parent *block, ctxt targets, lstmt *LabeledS
 			}
 
 		case *ForStmt:
+			innerBlock(targets{s, s}, s.Body.Pos(), s.Body.List)
+
+		case *WhileStmt:
 			innerBlock(targets{s, s}, s.Body.Pos(), s.Body.List)
 
 		case *SwitchStmt:

@@ -50,6 +50,7 @@ var OpNames = []string{
 	OEQ:          "==",
 	OFALL:        "fallthrough",
 	OFOR:         "for",
+	OWHL:         "while",
 	OFORUNTIL:    "foruntil", // not actual syntax; used to avoid off-end pointer live on backedge.892
 	OGE:          ">=",
 	OGOTO:        "goto",
@@ -283,6 +284,7 @@ var OpPrec = []int{
 	ODEFER:      -1,
 	OFALL:       -1,
 	OFOR:        -1,
+	OWHL:        -1,
 	OFORUNTIL:   -1,
 	OGOTO:       -1,
 	OIF:         -1,
@@ -299,7 +301,7 @@ var OpPrec = []int{
 // StmtWithInit reports whether op is a statement with an explicit init list.
 func StmtWithInit(op Op) bool {
 	switch op {
-	case OIF, OFOR, OFORUNTIL, OSWITCH:
+	case OIF, OFOR, OFORUNTIL, OSWITCH, OWHL:
 		return true
 	}
 	return false
@@ -409,6 +411,20 @@ func stmtFmt(n Node, s fmt.State) {
 		if len(n.Else) != 0 {
 			fmt.Fprintf(s, " else { %v }", n.Else)
 		}
+	case OWHL:
+		n := n.(*WhileStmt)
+		opname := "while"
+		if !exportFormat {
+			fmt.Fprintf(s, "%s loop", opname)
+		}
+		fmt.Fprint(s, opname)
+		if simpleinit {
+			fmt.Fprintf(s, " %v;", n.Init()[0])
+		}
+		if n.Cond != nil {
+			fmt.Fprintf(s, " %v", n.Cond)
+		}
+		fmt.Fprintf(s, " { %v }", n.Body)
 
 	case OFOR, OFORUNTIL:
 		n := n.(*ForStmt)

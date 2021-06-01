@@ -308,6 +308,8 @@ func EndPos(n Node) Pos {
 			m = n.Then
 		case *ForStmt:
 			m = n.Body
+		case *WhileStmt:
+			m = n.Body
 		case *SwitchStmt:
 			return n.Rbrace
 		case *SelectStmt:

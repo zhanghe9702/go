@@ -139,6 +139,8 @@ func (g *irgen) stmt(stmt syntax.Stmt) ir.Node {
 		return g.ifStmt(stmt)
 	case *syntax.ForStmt:
 		return g.forStmt(stmt)
+	case *syntax.WhileStmt:
+		return g.whileStmt(stmt)
 	case *syntax.SelectStmt:
 		n := g.selectStmt(stmt)
 		transformSelect(n.(*ir.SelectStmt))
@@ -272,6 +274,10 @@ func (g *irgen) forStmt(stmt *syntax.ForStmt) ir.Node {
 	return ir.NewForStmt(g.pos(stmt), g.stmt(stmt.Init), g.expr(stmt.Cond), g.stmt(stmt.Post), g.blockStmt(stmt.Body))
 }
 
+func (g *irgen) whileStmt(stmt *syntax.WhileStmt) ir.Node {
+	return ir.NewWhileStmt(g.pos(stmt), g.stmt(stmt.Init), g.expr(stmt.Cond), g.blockStmt(stmt.Body))
+}
+
 func (g *irgen) selectStmt(stmt *syntax.SelectStmt) ir.Node {
 	body := make([]*ir.CommClause, len(stmt.Body))
 	for i, clause := range stmt.Body {
@@ -333,6 +339,8 @@ func (g *irgen) labeledStmt(label *syntax.LabeledStmt) ir.Node {
 	case *ir.SelectStmt:
 		ls.Label = sym
 	case *ir.SwitchStmt:
+		ls.Label = sym
+	case *ir.WhileStmt:
 		ls.Label = sym
 	}
 

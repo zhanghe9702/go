@@ -215,6 +215,24 @@ func NewForStmt(pos src.XPos, init Node, cond, post Node, body []Node) *ForStmt 
 	return n
 }
 
+type WhileStmt struct {
+	miniStmt
+	Label    *types.Sym
+	Cond     Node
+	Body     Nodes
+	HasBreak bool
+}
+
+func NewWhileStmt(pos src.XPos, init Node, cond Node, body []Node) *WhileStmt {
+	n := &WhileStmt{Cond: cond, Body: body}
+	n.pos = pos
+	n.op = OWHL
+	if init != nil {
+		n.init = []Node{init}
+	}
+	return n
+}
+
 func (n *ForStmt) SetOp(op Op) {
 	if op != OFOR && op != OFORUNTIL {
 		panic(n.no("SetOp " + op.String()))

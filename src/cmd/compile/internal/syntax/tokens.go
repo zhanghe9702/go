@@ -50,21 +50,24 @@ const (
 	_Else        // else
 	_Fallthrough // fallthrough
 	_For         // for
-	_Func        // func
-	_Go          // go
-	_Goto        // goto
-	_If          // if
-	_Import      // import
-	_Interface   // interface
-	_Map         // map
-	_Package     // package
-	_Range       // range
-	_Return      // return
-	_Select      // select
-	_Struct      // struct
-	_Switch      // switch
-	_Type        // type
-	_Var         // var
+	_While       // while
+	// _Do          // do
+	// _Until       // until
+	_Func      // func
+	_Go        // go
+	_Goto      // goto
+	_If        // if
+	_Import    // import
+	_Interface // interface
+	_Map       // map
+	_Package   // package
+	_Range     // range
+	_Return    // return
+	_Select    // select
+	_Struct    // struct
+	_Switch    // switch
+	_Type      // type
+	_Var       // var
 
 	// empty line comment to exclude it from .String
 	tokenCount //

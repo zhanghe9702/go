@@ -408,6 +408,12 @@ func (v *hairyVisitor) doNode(n ir.Node) bool {
 			v.reason = "labeled control"
 			return true
 		}
+	case ir.OWHL:
+		n := n.(*ir.WhileStmt)
+		if n.Label != nil {
+			v.reason = "labeled control"
+			return true
+		}
 	case ir.OSWITCH:
 		n := n.(*ir.SwitchStmt)
 		if n.Label != nil {

@@ -1123,6 +1123,8 @@ func (p *noder) stmtFall(stmt syntax.Stmt, fallOK bool) ir.Node {
 		return p.ifStmt(stmt)
 	case *syntax.ForStmt:
 		return p.forStmt(stmt)
+	case *syntax.WhileStmt:
+		return p.whileStmt(stmt)
 	case *syntax.SwitchStmt:
 		return p.switchStmt(stmt)
 	case *syntax.SelectStmt:
@@ -1242,6 +1244,13 @@ func (p *noder) forStmt(stmt *syntax.ForStmt) ir.Node {
 	return n
 }
 
+func (p *noder) whileStmt(stmt *syntax.WhileStmt) ir.Node {
+	p.openScope(stmt.Pos())
+	n := ir.NewWhileStmt(p.pos(stmt), p.stmt(stmt.Init), p.expr(stmt.Cond), p.blockStmt(stmt.Body))
+	p.closeAnotherScope()
+	return n
+}
+
 func (p *noder) switchStmt(stmt *syntax.SwitchStmt) ir.Node {
 	p.openScope(stmt.Pos())
 
@@ -1350,6 +1359,9 @@ func (p *noder) labeledStmt(label *syntax.LabeledStmt, fallOK bool) ir.Node {
 				ls.Label = sym
 			case ir.OSELECT:
 				ls := ls.(*ir.SelectStmt)
+				ls.Label = sym
+			case ir.OWHL:
+				ls := ls.(*ir.WhileStmt)
 				ls.Label = sym
 			}
 		}

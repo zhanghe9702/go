@@ -1762,7 +1762,52 @@ func (s *state) stmt(n ir.Node) {
 		b := s.endBlock()
 		b.Pos = s.lastPos.WithIsStmt() // Do this even if b is an empty block.
 		b.AddEdgeTo(to)
+	case ir.OWHL:
+		// OWHL: while Ninit; Left; Right { Nbody }
+		n := n.(*ir.WhileStmt)
+		bCond := s.f.NewBlock(ssa.BlockPlain)
+		bBody := s.f.NewBlock(ssa.BlockPlain)
+		bEnd := s.f.NewBlock(ssa.BlockPlain)
 
+		bBody.Pos = n.Pos()
+
+		b := s.endBlock()
+
+		b.AddEdgeTo(bCond)
+		s.startBlock(bCond)
+		if n.Cond != nil {
+			s.condBranch(n.Cond, bBody, bEnd, 1)
+		} else {
+			b := s.endBlock()
+			b.Kind = ssa.BlockPlain
+			b.AddEdgeTo(bBody)
+		}
+		prevContinue := s.continueTo
+		prevBreak := s.breakTo
+		s.continueTo = bCond
+		s.breakTo = bEnd
+		var lab *ssaLabel
+		if sym := n.Label; sym != nil {
+			// labeled for loop
+			lab = s.label(sym)
+			lab.continueTarget = bCond
+			lab.breakTarget = bEnd
+		}
+		s.startBlock(bBody)
+		s.stmtList(n.Body)
+
+		// tear down continue/break
+		s.continueTo = prevContinue
+		s.breakTo = prevBreak
+		if lab != nil {
+			lab.continueTarget = nil
+			lab.breakTarget = nil
+		}
+
+		if b := s.endBlock(); b != nil {
+			b.AddEdgeTo(bCond)
+		}
+		s.startBlock(bEnd)
 	case ir.OFOR, ir.OFORUNTIL:
 		// OFOR: for Ninit; Left; Right { Nbody }
 		// cond (Left); body (Nbody); incr (Right)
@@ -1780,19 +1825,14 @@ func (s *state) stmt(n ir.Node) {
 
 		// first, jump to condition test (OFOR) or body (OFORUNTIL)
 		b := s.endBlock()
-		if n.Op() == ir.OFOR {
-			b.AddEdgeTo(bCond)
-			// generate code to test condition
-			s.startBlock(bCond)
-			if n.Cond != nil {
-				s.condBranch(n.Cond, bBody, bEnd, 1)
-			} else {
-				b := s.endBlock()
-				b.Kind = ssa.BlockPlain
-				b.AddEdgeTo(bBody)
-			}
-
+		b.AddEdgeTo(bCond)
+		// generate code to test condition
+		s.startBlock(bCond)
+		if n.Cond != nil {
+			s.condBranch(n.Cond, bBody, bEnd, 1)
 		} else {
+			b := s.endBlock()
+			b.Kind = ssa.BlockPlain
 			b.AddEdgeTo(bBody)
 		}
 

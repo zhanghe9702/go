@@ -1344,6 +1344,33 @@ func (n *UnaryExpr) editChildren(edit func(Node) Node) {
 	}
 }
 
+func (n *WhileStmt) Format(s fmt.State, verb rune) { fmtNode(n, s, verb) }
+func (n *WhileStmt) copy() Node {
+	c := *n
+	c.init = copyNodes(c.init)
+	c.Body = copyNodes(c.Body)
+	return &c
+}
+func (n *WhileStmt) doChildren(do func(Node) bool) bool {
+	if doNodes(n.init, do) {
+		return true
+	}
+	if n.Cond != nil && do(n.Cond) {
+		return true
+	}
+	if doNodes(n.Body, do) {
+		return true
+	}
+	return false
+}
+func (n *WhileStmt) editChildren(edit func(Node) Node) {
+	editNodes(n.init, edit)
+	if n.Cond != nil {
+		n.Cond = edit(n.Cond).(Node)
+	}
+	editNodes(n.Body, edit)
+}
+
 func (n *typeNode) Format(s fmt.State, verb rune) { fmtNode(n, s, verb) }
 func (n *typeNode) copy() Node {
 	c := *n
